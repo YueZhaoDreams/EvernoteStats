@@ -11,14 +11,18 @@ object DataGenerator {
   val inputDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
 
   def main(args: Array[String]): Unit = {
-    val doc = Jsoup.parse(new File("./src/main/resources/notes/dreamnotes.html"), null)
+
+    val notes = loadNotes("./src/main/resources/notes/dreamnotes.html")
+    generateReportByKeyword(notes, "清醒梦")
+  }
+
+  def loadNotes(fileLocation: String): util.List[Note] = {
+    val doc = Jsoup.parse(new File(fileLocation), null)
     val notes = new util.ArrayList[Note]
     val body = doc.select("body").html()
-    val x = body.split("<hr>").length
     body.split("<hr>").foreach(
       s => addToNotes(s, notes))
-
-    generateReportByKeyword(notes, "清醒梦")
+    notes
   }
 
   def addToNotes(value: String, target: util.List[Note]): Unit = {
@@ -47,7 +51,7 @@ object DataGenerator {
   }
 
   def generateReportByKeyword(target: util.List[Note], keyword: String): Unit = {
-    for(note <- target.asScala) {
+    for (note <- target.asScala) {
       val name = note.getName
       val tags = note.getTags
       if (name.matches("""^\d{8}.*""") && tags.contains(keyword)) {
