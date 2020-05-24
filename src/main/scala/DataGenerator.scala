@@ -1,11 +1,15 @@
 import java.io.File
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util
 
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
-import collection.JavaConverters._
+
+import scala.collection.JavaConverters._
 
 object DataGenerator {
+  val inputDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
+
   def main(args: Array[String]): Unit = {
     val doc = Jsoup.parse(new File("./src/main/resources/notes/dreamnotes.html"), null)
     val notes = new util.ArrayList[Note]
@@ -14,7 +18,7 @@ object DataGenerator {
     body.split("<hr>").foreach(
       s => addToNotes(s, notes))
 
-    //    println(notes)
+    generateReportByKeyword(notes, "清醒梦")
   }
 
   def addToNotes(value: String, target: util.List[Note]): Unit = {
@@ -28,16 +32,46 @@ object DataGenerator {
       new util.HashSet[String](util.Arrays.asList[String](tagArray: _*))
     } else new util.HashSet[String]()
 
-    val content = noteHtml.select("span").html()
+    val content = noteHtml.select("span").html().replaceAll("<div>", "").replaceAll("</div>", "")
 
-    if (
-      !tags.contains("清醒梦") && (name.contains("清醒梦") || content.contains("清醒梦") || content.contains("清明梦"))) {
-      println(name)
-    }
+    note.setContent(content)
+    note.setName(name)
+    note.setTags(tags)
+
+
 
     //    note.setName(name)
     //    note.setCreatedDate(name.substring(0, 7))
 
     target.add(note)
+  }
+
+  def generateReportByKeyword(target: util.List[Note], keyword: String): Unit = {
+    for(note <- target.asScala) {
+      val name = note.getName
+      val tags = note.getTags
+      if (name.matches("""^\d{8}.*""") && tags.contains(keyword)) {
+        println(name + "; " + LocalDate.parse(name.substring(0, 8), inputDateFormat).atStartOfDay().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")))
+      }
+    }
+  }
+
+  def filterNotesWithMissingTag(target: util.List[Note], tagName: String): util.List[Note] = {
+    val filteredNotes = new util.ArrayList[Note]
+
+    def addToFilterNotes(note: Note) = {
+      val name = note.getName()
+      val tags = note.getTags()
+      val content = note.getContent
+      if (name.matches("""^\d{8}.*""") &&
+        (!tags.contains(tagName) && (name.contains(tagName) || content.contains(tagName) || content.contains(tagName)))) {
+        filteredNotes.add(note)
+      }
+    }
+
+    for (note: Note <- target.asScala) {
+      addToFilterNotes(note)
+    }
+    filteredNotes
   }
 }
