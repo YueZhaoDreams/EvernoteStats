@@ -1,3 +1,5 @@
+package evernote;
+
 public class Tag {
     private String name;
 

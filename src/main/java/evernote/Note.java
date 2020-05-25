@@ -1,3 +1,5 @@
+package evernote;
+
 import java.util.Set;
 
 public class Note {

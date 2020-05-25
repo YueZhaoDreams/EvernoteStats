@@ -1,19 +1,18 @@
 import java.io.File
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util
 
+import evernote.Note
 import org.jsoup.Jsoup
+import report.NoteNameByKeywordReport
 
 import scala.collection.JavaConverters._
 
 object DataGenerator {
-  val inputDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
-
   def main(args: Array[String]): Unit = {
 
     val notes = loadNotes("./src/main/resources/notes/dreamnotes.html")
-    generateReportByKeyword(notes, "清醒梦")
+    val report = new NoteNameByKeywordReport(notes, "清醒梦")
+    report.print()
   }
 
   def loadNotes(fileLocation: String): util.List[Note] = {
@@ -48,16 +47,6 @@ object DataGenerator {
     //    note.setCreatedDate(name.substring(0, 7))
 
     target.add(note)
-  }
-
-  def generateReportByKeyword(target: util.List[Note], keyword: String): Unit = {
-    for (note <- target.asScala) {
-      val name = note.getName
-      val tags = note.getTags
-      if (name.matches("""^\d{8}.*""") && tags.contains(keyword)) {
-        println(name + "; " + LocalDate.parse(name.substring(0, 8), inputDateFormat).atStartOfDay().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")))
-      }
-    }
   }
 
   def filterNotesWithMissingTag(target: util.List[Note], tagName: String): util.List[Note] = {
