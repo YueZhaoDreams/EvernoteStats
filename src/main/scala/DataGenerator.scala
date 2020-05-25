@@ -12,7 +12,7 @@ object DataGenerator {
 
     val notes = loadNotes("./src/main/resources/notes/dreamnotes.html")
     val report = new NoteNameByKeywordReport(notes, "清醒梦")
-    report.print()
+    report.toCsv()
   }
 
   def loadNotes(fileLocation: String): util.List[Note] = {
