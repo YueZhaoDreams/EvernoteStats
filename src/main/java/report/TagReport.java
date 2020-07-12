@@ -10,40 +10,45 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
-public class NoteNameByKeywordReport implements Report {
+public class TagReport implements Report {
     private List<Note> notes;
-    private String keyword;
 
-    public NoteNameByKeywordReport(List<Note> notes, String keyword) {
+    public TagReport(List<Note> notes) {
         this.notes = notes;
-        this.keyword = keyword;
     }
 
     @Override
     public void toCsv() {
         try {
-            File target = new File(outputFolder + "/noteNameByKeywordReport.csv");
+            File target = new File(outputFolder + "/tagReport.csv");
             target.getParentFile().mkdirs();
             target.createNewFile();
             FileWriter csvWriter = new FileWriter(target);
+
+            csvWriter.append("tag,date\n");
+
             DateTimeFormatter inputDateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-            csvWriter.append("noteName;date\n");
-
-            int relatedNoteNumber = 0;
+            int relatedRowNumber = 0;
             for (Note note : notes) {
                 String name = note.getName();
                 Set<String> tags = note.getTags();
-                if (name.matches("^\\d{8}.*") && tags.contains(keyword)) {
-                    csvWriter.append(name + ";" + LocalDate.parse(name.substring(0, 8), inputDateFormat)
-                            .atStartOfDay().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")) + "\n");
-                    relatedNoteNumber++;
+
+                if (!name.matches("^\\d{8}.*")) {
+                    System.out.println("Name is " +name);
+                    continue;
+                }
+
+                String date = LocalDate.parse(name.substring(0, 8), inputDateFormat)
+                        .atStartOfDay().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+                for (String tag : tags) {
+                    csvWriter.append(tag + "," + date + "\n");
+                    relatedRowNumber++;
                 }
             }
             csvWriter.flush();
             csvWriter.close();
             System.out.println("Report generated at " + target.getAbsolutePath());
-            System.out.println("Printed " + relatedNoteNumber + " notes with keyword " + keyword);
+            System.out.println("Printed " + relatedRowNumber + " rows of tags");
         } catch (IOException e) {
             e.printStackTrace();
         }

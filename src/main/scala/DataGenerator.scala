@@ -3,7 +3,7 @@ import java.util
 
 import evernote.Note
 import org.jsoup.Jsoup
-import report.NoteNameByKeywordReport
+import report.{NoteNameByKeywordReport, TagReport}
 
 import scala.collection.JavaConverters._
 
@@ -13,6 +13,9 @@ object DataGenerator {
     val notes = loadNotes("./src/main/resources/notes/dreamnotes.html")
     val report = new NoteNameByKeywordReport(notes, "清醒梦")
     report.toCsv()
+
+    val report2 = new TagReport(notes)
+    report2.toCsv()
   }
 
   def loadNotes(fileLocation: String): util.List[Note] = {
